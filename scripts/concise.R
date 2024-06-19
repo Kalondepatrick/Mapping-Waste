@@ -1,7 +1,7 @@
 # Mapping waste piles from drone imagery
 
 # Libraries
-required_packages <- c("sf", "dplyr", "caret", "tictoc", "rsample")
+required_packages <- c("sf", "dplyr", "caret", "tictoc", "rpart","rsample")
 for (pkg in required_packages) {
   if (!requireNamespace(pkg, quietly = TRUE)) {
     install.packages(pkg, dependencies = TRUE)
@@ -125,3 +125,32 @@ display_confusion_matrix(ann_bin$confusion)
 display_confusion_matrix(nb_bin$confusion)
 display_confusion_matrix(svm_bin$confusion)
 
+
+
+# Predict: 
+# Best binary
+
+raw <- read_sf("inputs/segments.shp")  #--- All data
+bestmodel = svm_bin$model
+raw$nsima <- predict(bestmodel, raw)
+
+raw$area2 = st_area(raw)
+
+summary_data <- raw %>%
+  group_by(nsima) %>%
+  summarize(total_area = sum(area2))
+print(summary_data)
+
+
+# Best multiclass
+
+raw <- read_sf("inputs/segments.shp")  #--- All data
+bestmodel = rf_multi$model
+raw$nsima <- predict(bestmodel, raw)
+
+raw$area2 = st_area(raw)
+
+summary_data <- raw %>%
+  group_by(nsima) %>%
+  summarize(total_area = sum(area2))
+print(summary_data)
